@@ -1,0 +1,4 @@
+<mujoco model="scene_pinky_stadium">
+  <include file="../robots/pinky/pinky.xml"/>
+  <include file="floor_sky.xml"/>
+</mujoco>

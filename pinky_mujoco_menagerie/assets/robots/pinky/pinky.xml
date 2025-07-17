@@ -1,0 +1,133 @@
+<!-- 모델 전체 이름 정의 -->
+<mujoco model="pinky">
+
+  <!-- 컴파일러 설정: 각도 단위, 메쉬 경로, 자동 한계값 부여 -->
+  <compiler angle="radian"
+            meshdir=""
+            autolimits="true"/>
+  
+  <!-- 시뮬레이션 적분기 설정 (implicit RK-based) -->
+  <option integrator="implicit"/>
+
+  <!-- 모든 관절의 기본 속성: 회전 범위 제한 해제, 관성 계수 지정 -->
+  <default>
+    <joint limited="false" armature="0.01"/>
+    <equality solref="0.02 1" solimp="0.9 0.95 0.001"/>
+  </default>
+
+  <!-- 메쉬 에셋 등록: 이름 ↔ 파일 매핑 -->
+  <asset>
+    <mesh name="pinky_base" file="meshes/base_link.stl"/>
+    <mesh name="wheel"      file="meshes/wheel.stl"/>
+    <mesh name="ul_sensor"  file="meshes/ul_sensor.stl"/>
+    <mesh name="caster"     file="meshes/caster.stl"/>
+    <mesh name="camera"     file="meshes/camera.stl"/>
+    <mesh name="lidar"      file="meshes/lidar.stl"/>
+  </asset>
+
+  <!-- visual(전역 시각 옵션): rangefinder 시각화 색·투명도 조정 -->
+  <!-- <visual>
+    <rgba rangefinder="0 0 1 0.1"/>
+  </visual> -->
+
+  <!-- 시뮬레이션 물리 객체 정의 -->
+  <worldbody>
+    <body name="base" pos="0 0 0">
+      
+      <!-- base 자유도 joint: 위치 및 자세 모두 제어 가능 -->
+      <joint type="free" name="base_joint"/>
+
+      <!-- 로봇 본체 오프셋 위치 -->
+      <body name="pinky_base" pos="0 0 0.03">
+
+        <!-- 차체 mesh geometry 및 관성 설정 -->
+        <body name="chassis" pos="0 0 0">
+          <inertial pos="-0.01 0 0.01" mass="0.473"
+                    diaginertia="0.0008333333 0.0011333333 0.0013666667"/>
+          <geom type="mesh" mesh="pinky_base" rgba="0.71 0.36 0.72 1.0" pos="0 0 0"/>
+
+          <!-- 캐스터 휠 -->
+          <body name="caster" pos="-0.044 0 -0.0175">
+            <inertial pos="0 0 0" mass="0.02"
+                      diaginertia="2.8e-05 2.8e-05 2.8e-05"/>
+            <geom type="mesh" mesh="caster" pos="0 0 0" friction="0.05 0.0001 0.0001"/>
+          </body>
+
+          <!-- 바퀴 -->
+          <body name="left_wheel" pos="0 0.055 0" quat="0.70710678 -0.70710678 0 0">
+            <joint name="left_wheel_joint" type="hinge" axis="0 0 1"/>
+            <inertial pos="0 0 0" mass="0.011"
+                      diaginertia="1e-6 1e-6 1e-6"/>
+            <geom type="mesh" mesh="wheel" rgba="0.17 0.17 0.17 1" pos="0 0 0" friction="2.5 0.005 0.005"/>
+          </body>
+          <body name="right_wheel" pos="0 -0.055 0" quat="0.70710678 -0.70710678 0 0">
+            <joint name="right_wheel_joint" type="hinge" axis="0 0 1"/>
+            <inertial pos="0 0 0" mass="0.011"
+                      diaginertia="1e-6 1e-6 1e-6"/>
+            <geom type="mesh" mesh="wheel" rgba="0.17 0.17 0.17 1" pos="0 0 0" friction="2.5 0.005 0.005"/>
+          </body>
+
+          <!-- 초음파 센서 -->
+          <body name="ul_sensor_mount" pos="0.028 -0.002 -0.0035">
+            <body name="ul_sensor_link" pos="0.01 0 0">
+              <inertial pos="0.005 0 0.013" mass="0.008"
+                        diaginertia="0.000005 0.000004 0.000003"/>
+              <geom type="mesh" mesh="ul_sensor" rgba="0.07 0.34 0.63 1.0" pos="0 0 0"/>
+            </body>
+          </body>
+
+          <!-- 카메라 -->
+          <body name="camera_mount" pos="0.05 -0.001 0.028">
+            <body name="camera_link" pos="0.001 0 0.003">
+              <inertial pos="0.005 0 0.013" mass="0.01"
+                        diaginertia="0.000005 0.000004 0.000003"/>
+              <geom type="mesh" mesh="camera" rgba="0.31 0.64 0.41 1.0" pos="0 0 0"/>
+            <camera
+                name="camera"
+                xyaxes="0 -1 0 0 0 1"
+                mode="fixed"
+                fovy="60"/>
+            </body>
+          </body>
+          
+          <!-- LiDAR -->
+          <body name="lidar_mount" pos="0 0 0.042">
+            <body name="laser_link" pos="0 0 0.00">
+              <inertial pos="0.007 0 0.025" mass="0.11"
+                        diaginertia="0.000058 0.000099 0.000103"/>
+              <!-- <replicate count="360" euler="0 0 1">   
+                  <site name="rf" size="0.001 0.001 0.001" rgba="0 0 0 0" pos="0.12 0.0 0.025" zaxis="1 0 0"/>
+              </replicate> -->
+              <geom type="mesh" mesh="lidar" rgba="0.1 0.1 0.1 1" pos="0 0 0"/>
+            </body>
+          </body>
+          
+          <!-- IMU -->
+          <body name="imu_link" pos="0 0 0.03">
+            <site name="imu" pos="0 0 0"/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <!-- 라이다 정의: replicate한 site(rf)에 rangefinder 연결 -->
+  <!-- imu 정의 -->
+  <sensor>
+    <!-- <rangefinder name="laser" site="rf"/> -->
+    <accelerometer name="accelerometer" site="imu"/>
+    <gyro name="gyro" site="imu"/>
+    <velocimeter name="velocimeter" site="imu"/>
+  </sensor>
+
+  <!-- 액추에이터: 바퀴 조작을 위한 속도 제어기 
+  - ctrllimited: ctrlrange 안으로 자동으로 클램핑
+  - ctrlrange: 제어 입력(ctrl)의 최소·최대 허용값을 [min, max] 형태로 지정, rad/s
+  - gear: 기어비(gear ratio) 역할을 하는 스케일 인자
+  - kv: 감쇠 계수(damping coefficient)로, 관절 속도에 비례하는 저항력을 생성, F = – kv × velocity × control -->
+  <actuator>
+    <velocity name="left_wheel_actuator"  joint="left_wheel_joint" ctrllimited="true" ctrlrange="-10.0 10.0" gear="1" kv="1.0"/>
+    <velocity name="right_wheel_actuator" joint="right_wheel_joint" ctrllimited="true" ctrlrange="-10.0 10.0" gear="1" kv="1.0"/>
+  </actuator>
+
+</mujoco>
