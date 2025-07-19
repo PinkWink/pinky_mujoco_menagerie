@@ -26,9 +26,9 @@
   </asset>
 
   <!-- visual(전역 시각 옵션): rangefinder 시각화 색·투명도 조정 -->
-  <!-- <visual>
+  <visual>
     <rgba rangefinder="0 0 1 0.1"/>
-  </visual> -->
+  </visual>
 
   <!-- 시뮬레이션 물리 객체 정의 -->
   <worldbody>
@@ -95,9 +95,9 @@
             <body name="laser_link" pos="0 0 0.00">
               <inertial pos="0.007 0 0.025" mass="0.11"
                         diaginertia="0.000058 0.000099 0.000103"/>
-              <!-- <replicate count="360" euler="0 0 1">   
+              <replicate count="360" euler="0 0 1">   
                   <site name="rf" size="0.001 0.001 0.001" rgba="0 0 0 0" pos="0.12 0.0 0.025" zaxis="1 0 0"/>
-              </replicate> -->
+              </replicate>
               <geom type="mesh" mesh="lidar" rgba="0.1 0.1 0.1 1" pos="0 0 0"/>
             </body>
           </body>
@@ -114,7 +114,7 @@
   <!-- 라이다 정의: replicate한 site(rf)에 rangefinder 연결 -->
   <!-- imu 정의 -->
   <sensor>
-    <!-- <rangefinder name="laser" site="rf"/> -->
+    <rangefinder name="laser" site="rf" cutoff="3.0"/>
     <accelerometer name="accelerometer" site="imu"/>
     <gyro name="gyro" site="imu"/>
     <velocimeter name="velocimeter" site="imu"/>
@@ -126,8 +126,11 @@
   - gear: 기어비(gear ratio) 역할을 하는 스케일 인자
   - kv: 감쇠 계수(damping coefficient)로, 관절 속도에 비례하는 저항력을 생성, F = – kv × velocity × control -->
   <actuator>
-    <velocity name="left_wheel_actuator"  joint="left_wheel_joint" ctrllimited="true" ctrlrange="-10.0 10.0" gear="1" kv="1.0"/>
-    <velocity name="right_wheel_actuator" joint="right_wheel_joint" ctrllimited="true" ctrlrange="-10.0 10.0" gear="1" kv="1.0"/>
+    <velocity name="left_wheel_actuator"  joint="left_wheel_joint" ctrllimited="true" 
+              ctrlrange="-10.0 10.0" gear="1" kv="1.0"/>
+    <velocity name="right_wheel_actuator" joint="right_wheel_joint" ctrllimited="true" 
+              ctrlrange="-10.0 10.0" gear="1" kv="1.0"/>
   </actuator>
 
 </mujoco>
+
